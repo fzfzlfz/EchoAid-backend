@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EchoAid — Dev Test UI</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    h1 { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.25rem; }
+    .subtitle { font-size: 0.85rem; color: #64748b; margin-bottom: 2rem; }
+
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 0.5rem;
+    }
+    .tab {
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      background: none;
+      border: 1px solid transparent;
+      color: #94a3b8;
+      transition: all 0.15s;
+    }
+    .tab:hover { border-color: #334155; color: #e2e8f0; }
+    .tab.active { background: #1e293b; border-color: #334155; color: #f1f5f9; }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    label { display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.4rem; }
+
+    input[type="file"] {
+      display: block;
+      width: 100%;
+      padding: 0.6rem;
+      background: #0f1117;
+      border: 1px dashed #334155;
+      border-radius: 6px;
+      color: #e2e8f0;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    input[type="file"]:hover { border-color: #60a5fa; }
+
+    textarea {
+      width: 100%;
+      padding: 0.6rem;
+      background: #0f1117;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      color: #e2e8f0;
+      font-size: 0.85rem;
+      resize: vertical;
+      min-height: 80px;
+      font-family: inherit;
+    }
+    textarea:focus { outline: none; border-color: #60a5fa; }
+
+    button.btn {
+      margin-top: 1rem;
+      padding: 0.5rem 1.25rem;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    button.btn:hover { background: #1d4ed8; }
+    button.btn:disabled { background: #334155; cursor: not-allowed; color: #64748b; }
+
+    .health-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      background: #0f1117;
+      border: 1px solid #334155;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #64748b; }
+    .dot.ok { background: #22c55e; }
+    .dot.err { background: #ef4444; }
+
+    .result-box {
+      margin-top: 1rem;
+      background: #0f1117;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 1rem;
+      font-size: 0.78rem;
+      font-family: 'Menlo', 'Monaco', monospace;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 420px;
+      overflow-y: auto;
+      color: #94a3b8;
+    }
+
+    .result-box.success { border-color: #16a34a; color: #bbf7d0; }
+    .result-box.error   { border-color: #dc2626; color: #fca5a5; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+
+    .summary-card {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    .summary-card h3 { font-size: 0.8rem; color: #60a5fa; margin-bottom: 0.5rem; }
+    .summary-card p  { font-size: 0.9rem; line-height: 1.6; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge.match   { background: #14532d; color: #4ade80; }
+    .badge.nomatch { background: #450a0a; color: #f87171; }
+    .badge.partial { background: #431407; color: #fb923c; }
+
+    audio { margin-top: 0.75rem; width: 100%; filter: invert(0.85); }
+
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid #334155;
+      border-top-color: #60a5fa;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .preview-img {
+      max-height: 180px;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      margin-top: 0.75rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<h1>EchoAid — Dev Test UI</h1>
+<p class="subtitle">Local test interface for the Medication Label Reader API · <code>http://localhost:8000</code></p>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('analyze')">Analyze Medication</button>
+  <button class="tab" onclick="switchTab('ocr')">OCR Only</button>
+  <button class="tab" onclick="switchTab('extract')">Extract Only</button>
+  <button class="tab" onclick="switchTab('health')">Health</button>
+</div>
+
+<!-- ANALYZE -->
+<div id="tab-analyze" class="panel active">
+  <div class="card">
+    <label>Upload medication image (jpg / jpeg / png)</label>
+    <input type="file" id="analyze-file" accept=".jpg,.jpeg,.png" onchange="previewImage(this)" />
+    <img id="analyze-preview" class="preview-img" />
+    <button class="btn" id="analyze-btn" onclick="runAnalyze()">Run Analysis</button>
+  </div>
+  <div id="analyze-result"></div>
+</div>
+
+<!-- OCR ONLY -->
+<div id="tab-ocr" class="panel">
+  <div class="card">
+    <label>Upload image for raw OCR</label>
+    <input type="file" id="ocr-file" accept=".jpg,.jpeg,.png" onchange="previewImage(this, 'ocr-preview')" />
+    <img id="ocr-preview" class="preview-img" />
+    <button class="btn" id="ocr-btn" onclick="runOCR()">Run OCR</button>
+  </div>
+  <div id="ocr-result"></div>
+</div>
+
+<!-- EXTRACT ONLY -->
+<div id="tab-extract" class="panel">
+  <div class="card">
+    <label>Paste OCR text to extract structured data</label>
+    <textarea id="extract-text" placeholder="e.g. Tylenol 500 mg tablet take 1-2 every 4-6 hours"></textarea>
+    <button class="btn" id="extract-btn" onclick="runExtract()">Run Extraction</button>
+  </div>
+  <div id="extract-result"></div>
+</div>
+
+<!-- HEALTH -->
+<div id="tab-health" class="panel">
+  <div class="card" style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+    <span class="health-badge"><span class="dot" id="health-dot"></span><span id="health-text">not checked</span></span>
+    <button class="btn" style="margin-top:0" onclick="runHealth()">Check Health</button>
+  </div>
+</div>
+
+<script>
+  const BASE = 'http://localhost:8000';
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      const names = ['analyze','ocr','extract','health'];
+      t.classList.toggle('active', names[i] === name);
+    });
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  function previewImage(input, imgId) {
+    const id = imgId || 'analyze-preview';
+    const img = document.getElementById(id);
+    if (input.files && input.files[0]) {
+      img.src = URL.createObjectURL(input.files[0]);
+      img.style.display = 'block';
+    }
+  }
+
+  function loading(btnId, on) {
+    const btn = document.getElementById(btnId);
+    btn.disabled = on;
+    btn.innerHTML = on
+      ? '<span class="spinner"></span>Running…'
+      : btn.dataset.label || btn.innerHTML;
+    if (!on && !btn.dataset.label) btn.dataset.label = btn.innerHTML;
+  }
+
+  function renderJSON(el, data, isError) {
+    el.innerHTML = '';
+    const box = document.createElement('div');
+    box.className = 'result-box ' + (isError ? 'error' : 'success');
+    box.textContent = JSON.stringify(data, null, 2);
+    el.appendChild(box);
+  }
+
+  function renderAnalyzeResult(el, data) {
+    el.innerHTML = '';
+
+    // Summary card
+    const status = data.status;
+    const badgeClass = status === 'success' ? 'match' : status === 'partial_success' ? 'partial' : 'nomatch';
+    const matched = data.kb_match?.matched;
+
+    const summary = document.createElement('div');
+    summary.className = 'summary-card';
+    summary.innerHTML = `
+      <h3>Summary <span class="badge ${badgeClass}">${status}</span>
+          ${matched ? '<span class="badge match">KB match</span>' : '<span class="badge nomatch">no match</span>'}</h3>
+      <p>${data.summary?.text || '—'}</p>
+      ${data.audio?.url ? `<audio controls src="${data.audio.url}"></audio>` : ''}
+    `;
+    el.appendChild(summary);
+
+    // Detail grid
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    const left = document.createElement('div');
+    left.innerHTML = `<div class="result-box">${JSON.stringify({ extraction: data.extraction, kb_match: data.kb_match }, null, 2)}</div>`;
+
+    const right = document.createElement('div');
+    right.innerHTML = `<div class="result-box">${JSON.stringify({ ocr_text: data.ocr_text, audio: data.audio, request_id: data.request_id }, null, 2)}</div>`;
+
+    row.appendChild(left);
+    row.appendChild(right);
+    el.appendChild(row);
+  }
+
+  async function runAnalyze() {
+    const file = document.getElementById('analyze-file').files[0];
+    const el = document.getElementById('analyze-result');
+    if (!file) { el.innerHTML = '<div class="result-box error">Select an image first.</div>'; return; }
+    loading('analyze-btn', true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch(`${BASE}/analyze-medication`, { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) { renderJSON(el, data, true); return; }
+      renderAnalyzeResult(el, data);
+    } catch (e) {
+      renderJSON(el, { error: e.message }, true);
+    } finally {
+      loading('analyze-btn', false);
+      document.getElementById('analyze-btn').textContent = 'Run Analysis';
+    }
+  }
+
+  async function runOCR() {
+    const file = document.getElementById('ocr-file').files[0];
+    const el = document.getElementById('ocr-result');
+    if (!file) { el.innerHTML = '<div class="result-box error">Select an image first.</div>'; return; }
+    loading('ocr-btn', true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch(`${BASE}/ocr-only`, { method: 'POST', body: fd });
+      const data = await res.json();
+      renderJSON(el, data, !res.ok);
+    } catch (e) {
+      renderJSON(el, { error: e.message }, true);
+    } finally {
+      loading('ocr-btn', false);
+      document.getElementById('ocr-btn').textContent = 'Run OCR';
+    }
+  }
+
+  async function runExtract() {
+    const text = document.getElementById('extract-text').value.trim();
+    const el = document.getElementById('extract-result');
+    if (!text) { el.innerHTML = '<div class="result-box error">Enter some OCR text first.</div>'; return; }
+    loading('extract-btn', true);
+    try {
+      const res = await fetch(`${BASE}/extract-only`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ocr_text: text }),
+      });
+      const data = await res.json();
+      renderJSON(el, data, !res.ok);
+    } catch (e) {
+      renderJSON(el, { error: e.message }, true);
+    } finally {
+      loading('extract-btn', false);
+      document.getElementById('extract-btn').textContent = 'Run Extraction';
+    }
+  }
+
+  async function runHealth() {
+    const dot = document.getElementById('health-dot');
+    const txt = document.getElementById('health-text');
+    dot.className = 'dot';
+    txt.textContent = 'checking…';
+    try {
+      const res = await fetch(`${BASE}/health`);
+      const data = await res.json();
+      if (res.ok && data.status === 'ok') {
+        dot.className = 'dot ok';
+        txt.textContent = 'ok';
+      } else {
+        dot.className = 'dot err';
+        txt.textContent = 'error';
+      }
+    } catch (e) {
+      dot.className = 'dot err';
+      txt.textContent = 'unreachable';
+    }
+  }
+
+  // Auto-check health on load
+  runHealth();
+</script>
+</body>
+</html>
