@@ -14,7 +14,6 @@ class Settings(BaseSettings):
     openai_api_key: str | None = Field(default=None, alias="OPENAI_API_KEY")
     ocr_provider: str = Field(default="paddle", alias="OCR_PROVIDER")
     openai_model: str = Field(default="gpt-4.1-mini", alias="OPENAI_MODEL")
-    openai_tts_model: str = Field(default="gpt-4o-mini-tts", alias="OPENAI_TTS_MODEL")
     database_url: str = Field(
         default="postgresql+psycopg://postgres:postgres@localhost:5432/med_label_reader",
         alias="DATABASE_URL",
@@ -26,6 +25,8 @@ class Settings(BaseSettings):
     audio_sample_rate: int = Field(default=32000, alias="AUDIO_SAMPLE_RATE")
     audio_channels: int = Field(default=1, alias="AUDIO_CHANNELS")
     audio_bitrate: str = Field(default="64k", alias="AUDIO_BITRATE")
+    aws_access_key_id: str | None = Field(default=None, alias="AWS_ACCESS_KEY_ID")
+    aws_secret_access_key: str | None = Field(default=None, alias="AWS_SECRET_ACCESS_KEY")
     aws_region: str = Field(default="us-west-2", alias="AWS_REGION")
     s3_bucket_name: str | None = Field(default=None, alias="S3_BUCKET_NAME")
     fallback_audio_s3_key: str = Field(
@@ -47,6 +48,7 @@ class Settings(BaseSettings):
         alias="KB_MATCH_CONFIDENCE_THRESHOLD",
     )
     enable_mock_services: bool = Field(default=False, alias="ENABLE_MOCK_SERVICES")
+    paddle_pdx_disable_model_source_check: bool = Field(default=True, alias="PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK")
 
 
 @lru_cache

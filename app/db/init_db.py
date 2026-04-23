@@ -12,6 +12,11 @@ def create_schema() -> None:
     Base.metadata.create_all(bind=engine)
 
 
+def reset_schema() -> None:
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+
+
 def seed_medications_from_json(
     session: Session,
     seed_path: Path = BASE_DIR / "data" / "medications.json",
@@ -23,7 +28,11 @@ def seed_medications_from_json(
     for record in records:
         exists = (
             session.query(MedicationORM)
-            .filter(MedicationORM.canonical_name == record["canonical_name"])
+            .filter(
+                MedicationORM.canonical_name == record["canonical_name"],
+                MedicationORM.strength == record["strength"],
+                MedicationORM.form == record["form"],
+            )
             .first()
         )
         if exists:
@@ -33,13 +42,11 @@ def seed_medications_from_json(
             MedicationORM(
                 canonical_name=record["canonical_name"],
                 aliases=record.get("aliases", []),
-                dose_forms=record.get("dose_forms", []),
-                common_strengths=record.get("common_strengths", []),
+                strength=record["strength"],
+                form=record["form"],
                 purpose=record["purpose"],
                 warnings=record.get("warnings", []),
                 audio_summary_template=record["audio_summary_template"],
-                audio_s3_key=record.get("audio_s3_key"),
-                audio_url=record.get("audio_url"),
             )
         )
         inserted += 1

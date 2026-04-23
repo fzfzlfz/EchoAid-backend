@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from pydantic import BaseModel, Field
 
 
@@ -11,8 +9,9 @@ class OCRResult(BaseModel):
 
 class MedicationExtraction(BaseModel):
     drug_name: str | None = None
-    dose: str | None = None
-    form: str | None = None
+    strength: str | None = None   # e.g. "500mg", "160mg/5mL"
+    dose: str | None = None       # dosing instructions e.g. "2 caplets every 6 hours"
+    form: str | None = None       # e.g. "tablet", "liquid", "capsule"
     confidence: float = 0.0
     notes: str | None = None
 
@@ -21,14 +20,11 @@ class MedicationRecord(BaseModel):
     id: int | None = None
     canonical_name: str
     aliases: list[str] = Field(default_factory=list)
-    dose_forms: list[str] = Field(default_factory=list)
-    common_strengths: list[str] = Field(default_factory=list)
+    strength: str                  # e.g. "500mg", "160mg/5mL"
+    form: str                      # e.g. "caplet", "liquid"
     purpose: str
     warnings: list[str] = Field(default_factory=list)
     audio_summary_template: str
-    audio_s3_key: str | None = None
-    audio_url: str | None = None
-    audio_updated_at: datetime | None = None
 
 
 class KBMatchResult(BaseModel):

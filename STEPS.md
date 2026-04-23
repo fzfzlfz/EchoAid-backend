@@ -9,6 +9,16 @@
 7. Add tests that mock OCR, extraction, and TTS so the project is runnable locally without external calls.
 8. Install dependencies when possible, run tests, and fix build issues until the project is in a clean runnable state.
 
+## V3 Migration Steps
+
+1. Replace OpenAI TTS with Coqui TTS for local, cost-free audio generation.
+2. Remove per-medication audio caching — always regenerate audio per request so the spoken dose matches the current scan exactly.
+3. Key audio files by `request_id` in S3 instead of medication ID.
+4. Fix S3 boto3 client to use regional endpoint with SigV4 so pre-signed URLs don't redirect.
+5. Generate pre-signed S3 URLs (7-day expiry) so browser clients can load audio without public bucket access.
+6. Pass AWS credentials explicitly to boto3 client since pydantic-settings does not export `.env` values to `os.environ`.
+7. Update README to reflect Coqui TTS, no-cache audio flow, and pre-signed URL architecture.
+
 ## V2 Migration Steps
 
 1. Update the README to describe PostgreSQL medication storage, FFmpeg compression, and AWS S3 processed audio storage.

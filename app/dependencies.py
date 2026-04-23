@@ -57,8 +57,6 @@ def get_tts_service() -> TextToSpeechService:
     ensure_directory(settings.audio_dir)
     return TextToSpeechService(
         audio_dir=settings.audio_dir,
-        model=settings.openai_tts_model,
-        api_key=settings.openai_api_key,
         enable_mock=settings.enable_mock_services,
     )
 
@@ -82,6 +80,8 @@ def get_storage_service() -> S3StorageService:
     return S3StorageService(
         bucket_name=settings.s3_bucket_name,
         region=settings.aws_region,
+        aws_access_key_id=settings.aws_access_key_id,
+        aws_secret_access_key=settings.aws_secret_access_key,
         enable_mock=settings.enable_mock_services,
     )
 
@@ -91,7 +91,6 @@ def get_medication_audio_service() -> MedicationAudioService:
     settings = get_settings()
     ensure_directory(settings.audio_dir)
     return MedicationAudioService(
-        repository=get_medication_repository(),
         tts_service=get_tts_service(),
         compression_service=get_audio_compression_service(),
         storage_service=get_storage_service(),

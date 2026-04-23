@@ -1,41 +1,31 @@
 from pathlib import Path
 
-from openai import OpenAI
-
 from app.core.exceptions import TextToSpeechError
 
 
 class TextToSpeechService:
-    def __init__(
-        self,
-        audio_dir: Path,
-        model: str,
-        api_key: str | None,
-        enable_mock: bool = False,
-    ) -> None:
+    MODEL_NAME = "tts_models/en/ljspeech/tacotron2-DDC"
+
+    def __init__(self, audio_dir: Path, enable_mock: bool = False) -> None:
         self.audio_dir = audio_dir
-        self.model = model
         self.enable_mock = enable_mock
-        self.client = OpenAI(api_key=api_key) if api_key else None
+        self._tts = None
+        if not enable_mock:
+            try:
+                from TTS.api import TTS  # type: ignore
+                self._tts = TTS(model_name=self.MODEL_NAME, progress_bar=False)
+            except ImportError as exc:
+                raise TextToSpeechError("Coqui TTS is not installed. Run: pip install TTS") from exc
 
     def synthesize(self, text: str, request_id: str) -> Path:
-        output_path = self.audio_dir / f"{request_id}.mp3"
+        output_path = self.audio_dir / f"{request_id}.wav"
 
         if self.enable_mock:
             output_path.write_bytes(b"mock-audio")
             return output_path
 
-        if not self.client:
-            raise TextToSpeechError("OPENAI_API_KEY is missing. Configure it or enable mock services.")
-
         try:
-            with self.client.audio.speech.with_streaming_response.create(
-                model=self.model,
-                voice="alloy",
-                input=text,
-                format="mp3",
-            ) as response:
-                response.stream_to_file(output_path)
+            self._tts.tts_to_file(text=text, file_path=str(output_path))
             return output_path
         except Exception as exc:
-            raise TextToSpeechError("Failed to generate audio.") from exc
+            raise TextToSpeechError(f"Failed to generate audio: {exc}") from exc

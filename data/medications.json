@@ -1,62 +1,173 @@
 [
   {
-    "canonical_name": "Tylenol",
-    "aliases": ["Acetaminophen", "Tylenol Extra Strength"],
-    "dose_forms": ["tablet", "caplet"],
-    "common_strengths": ["325 mg", "500 mg"],
+    "canonical_name": "Tylenol Regular Strength",
+    "aliases": ["Acetaminophen Regular Strength", "Tylenol"],
+    "strength": "325mg",
+    "form": "tablet",
     "purpose": "pain relief and fever reduction",
     "warnings": [
-      "Do not exceed the recommended dose.",
+      "Do not exceed 10 tablets in 24 hours.",
       "Ask a doctor before use if you have liver disease."
     ],
-    "audio_summary_template": "{name}, {dose}. Commonly used for {purpose}. Warning: {warning_short}"
+    "audio_summary_template": "{name}, {strength} per tablet. {dose}. Used for {purpose}. Warning: {warning_short}"
+  },
+  {
+    "canonical_name": "Tylenol Extra Strength",
+    "aliases": ["Acetaminophen Extra Strength", "Tylenol", "Tylenol 500"],
+    "strength": "500mg",
+    "form": "caplet",
+    "purpose": "pain relief and fever reduction",
+    "warnings": [
+      "Do not exceed 6 caplets in 24 hours.",
+      "Ask a doctor before use if you have liver disease."
+    ],
+    "audio_summary_template": "{name}, {strength} per caplet. {dose}. Used for {purpose}. Warning: {warning_short}"
+  },
+  {
+    "canonical_name": "Tylenol Extended Release",
+    "aliases": ["Acetaminophen Extended Release", "Tylenol ER", "Tylenol Arthritis"],
+    "strength": "650mg",
+    "form": "tablet",
+    "purpose": "pain relief and fever reduction",
+    "warnings": [
+      "Do not exceed 6 tablets in 24 hours.",
+      "Do not crush or chew — swallow whole.",
+      "Ask a doctor before use if you have liver disease."
+    ],
+    "audio_summary_template": "{name}, {strength} extended-release tablet. {dose}. Used for {purpose}. Warning: {warning_short}"
+  },
+  {
+    "canonical_name": "Children's Tylenol",
+    "aliases": ["Children's Acetaminophen", "Pediatric Tylenol"],
+    "strength": "160mg/5mL",
+    "form": "liquid",
+    "purpose": "pain relief and fever reduction in children",
+    "warnings": [
+      "Dose by weight — see dosing chart on package.",
+      "Do not give more than 5 doses in 24 hours.",
+      "Ask a doctor before use in children under 2 years."
+    ],
+    "audio_summary_template": "{name}, {strength}. {dose}. Used for {purpose}. Warning: {warning_short}"
   },
   {
     "canonical_name": "Advil",
-    "aliases": ["Ibuprofen", "Advil Liqui-Gels"],
-    "dose_forms": ["tablet", "capsule"],
-    "common_strengths": ["200 mg"],
+    "aliases": ["Ibuprofen", "Advil Regular Strength"],
+    "strength": "200mg",
+    "form": "tablet",
     "purpose": "temporary relief of minor aches, pains, and fever",
     "warnings": [
       "Do not take more than directed.",
       "Ask a doctor before use if you have stomach bleeding history."
     ],
-    "audio_summary_template": "{name}, {dose}. Commonly used for {purpose}. Warning: {warning_short}"
+    "audio_summary_template": "{name}, {strength} per tablet. {dose}. Used for {purpose}. Warning: {warning_short}"
+  },
+  {
+    "canonical_name": "Advil Liqui-Gels",
+    "aliases": ["Ibuprofen Liqui-Gels", "Advil Liquid Capsule"],
+    "strength": "200mg",
+    "form": "capsule",
+    "purpose": "temporary relief of minor aches, pains, and fever",
+    "warnings": [
+      "Do not take more than directed.",
+      "Ask a doctor before use if you have stomach bleeding history."
+    ],
+    "audio_summary_template": "{name}, {strength} per capsule. {dose}. Used for {purpose}. Warning: {warning_short}"
+  },
+  {
+    "canonical_name": "Children's Advil",
+    "aliases": ["Children's Ibuprofen", "Pediatric Advil"],
+    "strength": "100mg/5mL",
+    "form": "liquid",
+    "purpose": "temporary relief of minor aches, pains, and fever in children",
+    "warnings": [
+      "Dose by weight — see dosing chart on package.",
+      "Do not use in children under 6 months without a doctor."
+    ],
+    "audio_summary_template": "{name}, {strength}. {dose}. Used for {purpose}. Warning: {warning_short}"
   },
   {
     "canonical_name": "Benadryl",
     "aliases": ["Diphenhydramine", "Benadryl Allergy"],
-    "dose_forms": ["capsule", "liquid"],
-    "common_strengths": ["25 mg"],
+    "strength": "25mg",
+    "form": "capsule",
     "purpose": "allergy symptom relief",
     "warnings": [
       "May cause marked drowsiness.",
       "Use caution when driving or operating machinery."
     ],
-    "audio_summary_template": "{name}, {dose}. Commonly used for {purpose}. Warning: {warning_short}"
+    "audio_summary_template": "{name}, {strength} per capsule. {dose}. Used for {purpose}. Warning: {warning_short}"
   },
   {
-    "canonical_name": "Aspirin",
-    "aliases": ["Bayer Aspirin"],
-    "dose_forms": ["tablet"],
-    "common_strengths": ["81 mg", "325 mg"],
+    "canonical_name": "Children's Benadryl",
+    "aliases": ["Children's Diphenhydramine"],
+    "strength": "12.5mg/5mL",
+    "form": "liquid",
+    "purpose": "allergy symptom relief in children",
+    "warnings": [
+      "Do not use in children under 2 years.",
+      "May cause marked drowsiness."
+    ],
+    "audio_summary_template": "{name}, {strength}. {dose}. Used for {purpose}. Warning: {warning_short}"
+  },
+  {
+    "canonical_name": "Aspirin Low Dose",
+    "aliases": ["Baby Aspirin", "Bayer Low Dose Aspirin", "Aspirin 81mg"],
+    "strength": "81mg",
+    "form": "tablet",
+    "purpose": "daily heart health maintenance — use only under doctor supervision",
+    "warnings": [
+      "Do not use if you are allergic to aspirin.",
+      "Consult your doctor before starting a daily aspirin regimen."
+    ],
+    "audio_summary_template": "{name}, {strength} per tablet. {dose}. Used for {purpose}. Warning: {warning_short}"
+  },
+  {
+    "canonical_name": "Aspirin Regular Strength",
+    "aliases": ["Bayer Aspirin", "Aspirin 325mg"],
+    "strength": "325mg",
+    "form": "tablet",
     "purpose": "pain relief and fever reduction",
     "warnings": [
       "Do not use if you are allergic to aspirin.",
       "Ask a doctor before use if you have stomach ulcers."
     ],
-    "audio_summary_template": "{name}, {dose}. Commonly used for {purpose}. Warning: {warning_short}"
+    "audio_summary_template": "{name}, {strength} per tablet. {dose}. Used for {purpose}. Warning: {warning_short}"
   },
   {
     "canonical_name": "Amoxicillin",
-    "aliases": ["Amoxil"],
-    "dose_forms": ["capsule", "tablet", "suspension"],
-    "common_strengths": ["250 mg", "500 mg"],
+    "aliases": ["Amoxil", "Amoxicillin Trihydrate"],
+    "strength": "250mg",
+    "form": "capsule",
     "purpose": "an antibiotic used to treat certain bacterial infections",
     "warnings": [
-      "Use only as prescribed by a clinician.",
+      "Complete the full course as prescribed — do not stop early.",
       "Tell your doctor about penicillin allergies before use."
     ],
-    "audio_summary_template": "{name}, {dose}. Commonly used as {purpose}. Warning: {warning_short}"
+    "audio_summary_template": "{name}, {strength} per capsule. {dose}. Used as {purpose}. Warning: {warning_short}"
+  },
+  {
+    "canonical_name": "Amoxicillin",
+    "aliases": ["Amoxil", "Amoxicillin Trihydrate"],
+    "strength": "500mg",
+    "form": "capsule",
+    "purpose": "an antibiotic used to treat certain bacterial infections",
+    "warnings": [
+      "Complete the full course as prescribed — do not stop early.",
+      "Tell your doctor about penicillin allergies before use."
+    ],
+    "audio_summary_template": "{name}, {strength} per capsule. {dose}. Used as {purpose}. Warning: {warning_short}"
+  },
+  {
+    "canonical_name": "Amoxicillin",
+    "aliases": ["Amoxil Suspension"],
+    "strength": "250mg/5mL",
+    "form": "suspension",
+    "purpose": "an antibiotic used to treat certain bacterial infections",
+    "warnings": [
+      "Complete the full course as prescribed — do not stop early.",
+      "Refrigerate after mixing. Shake well before each dose.",
+      "Tell your doctor about penicillin allergies before use."
+    ],
+    "audio_summary_template": "{name} oral suspension, {strength}. {dose}. Used as {purpose}. Warning: {warning_short}"
   }
 ]
