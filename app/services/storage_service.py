@@ -46,10 +46,23 @@ class S3StorageService:
         except Exception as exc:
             raise StorageUploadError("Failed to upload audio to S3.") from exc
 
+    def audio_key_exists(self, s3_key: str) -> bool:
+        if self.enable_mock:
+            return False
+        if not self.bucket_name:
+            return False
+        try:
+            self.client.head_object(Bucket=self.bucket_name, Key=s3_key)
+            return True
+        except self.client.exceptions.ClientError:
+            return False
+
     def presign_url(self, s3_key: str, expiry: int = 604800) -> str:
         """Return a pre-signed URL (default 7-day expiry)."""
         if self.enable_mock:
             return f"https://{self.bucket_name or 'mock-bucket'}.s3.{self.region}.amazonaws.com/{s3_key}"
+        if not self.bucket_name:
+            raise StorageUploadError("S3_BUCKET_NAME is missing.")
         return self.client.generate_presigned_url(
             "get_object",
             Params={"Bucket": self.bucket_name, "Key": s3_key},

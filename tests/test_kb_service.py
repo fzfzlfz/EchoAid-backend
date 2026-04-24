@@ -9,21 +9,17 @@ class InMemoryMedicationRepository:
                 id=1,
                 canonical_name="Tylenol",
                 aliases=["Acetaminophen", "Tylenol Extra Strength"],
-                dose_forms=["tablet"],
-                common_strengths=["500 mg"],
+                strength="500 mg",
+                form="tablet",
                 purpose="pain relief and fever reduction",
                 warnings=["Do not exceed the recommended dose."],
                 audio_summary_template="{name}, {dose}. Commonly used for {purpose}. Warning: {warning_short}",
-                audio_s3_key="medications/tylenol.mp3",
-                audio_url="https://example.com/tylenol.mp3",
             )
         ]
 
     def list_medications(self) -> list[MedicationRecord]:
         return self.records
 
-    def update_audio_reference(self, medication_id: int, s3_key: str, audio_url: str) -> MedicationRecord:
-        raise AssertionError("Not used by these tests.")
 
 
 def test_kb_exact_alias_match() -> None:

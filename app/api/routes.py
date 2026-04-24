@@ -41,7 +41,7 @@ async def extract_only(
 async def analyze_medication(
     file: UploadFile = File(...),
     pipeline=Depends(get_pipeline_service),
-) -> AnalyzeMedicationResponse:
+) -> AnalyzeMedicationResponse | JSONResponse:
     if not file.filename or not file.filename.lower().endswith((".jpg", ".jpeg", ".png")):
         raise HTTPException(status_code=400, detail="Only jpg, jpeg, and png files are supported.")
 

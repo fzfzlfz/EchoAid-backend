@@ -4,7 +4,7 @@ FastAPI backend for reading medication package images, extracting structured med
 
 This is an accessibility-focused backend. The app stays conservative: it distinguishes between verified database-backed matches and no-match fallback output, and it avoids inventing instructions that are not supported by OCR text or stored medication data.
 
-Audio is **always regenerated per request** — never cached — to ensure the spoken summary always reflects the exact dose and details extracted from the current scan. This is a deliberate safety decision: reusing cached audio risks reading out a stale dose to a patient.
+Audio is cached per medication variant (`canonical_name` + `strength` + `form`). On first scan the API generates fresh TTS audio, compresses it, and uploads it to S3 under a stable key. On subsequent scans of the same variant it skips TTS entirely and presigns the existing S3 object. Because the audio content is determined solely by the medication record (not per-request extraction), this is safe: the spoken dose always reflects the stored KB entry, not a per-scan guess.
 
 ## 1. Happy Path
 
@@ -32,7 +32,7 @@ sequenceDiagram
     TTS-->>API: Raw WAV file (local, no API call)
     API->>FFmpeg: Compress to MP3, mono, 32 kHz, 64 kbps
     FFmpeg-->>API: Compressed MP3
-    API->>S3: Upload compressed MP3 (keyed by request_id)
+    API->>S3: Upload compressed MP3 (keyed by canonical_name + strength + form)
     S3-->>API: Pre-signed URL (7-day expiry)
     API-->>User: Return summary + pre-signed audio URL
 ```
@@ -62,7 +62,7 @@ Example successful response:
   },
   "audio": {
     "content_type": "audio/mpeg",
-    "s3_key": "medications/<request_id>.mp3",
+    "s3_key": "medications/tylenol_500mg_tablet.mp3",
     "url": "https://s3.<region>.amazonaws.com/<bucket>/medications/<request_id>.mp3?X-Amz-...",
     "source": "generated_medication_audio"
   },
@@ -169,14 +169,132 @@ Key architecture decisions:
 
 - PostgreSQL is the source of truth for medication data.
 - TTS runs locally via Coqui TTS — no external API call, no cost per request.
-- Audio is never cached. Every request generates fresh audio from the current summary so the spoken dose always matches what was scanned.
-- Each audio file is keyed by `request_id` in S3 (`medications/<request_id>.mp3`), making every request traceable and independent.
+- Audio is cached per medication variant. S3 key format is `medications/{canonical_name}_{strength}_{form}.mp3` (e.g. `medications/tylenol_500mg_tablet.mp3`). On first scan TTS runs and the file is uploaded. On repeat scans the existing S3 object is presigned and returned — TTS, FFmpeg, and upload are skipped entirely.
 - S3 audio URLs are pre-signed with a 7-day expiry using the regional endpoint (SigV4) to avoid redirect-signature mismatches.
 - OpenAI is used only for structured extraction (drug name, dose, form) — not for audio.
 - FFmpeg compresses audio to MP3, mono, 32000 Hz, 64 kbps.
 - No-match fallback uses a shared S3 audio asset configured by `FALLBACK_AUDIO_S3_KEY` and `FALLBACK_AUDIO_URL`.
 - If TTS, FFmpeg, or S3 upload fails, the API returns HTTP 500 with an error audio payload (`ERROR_AUDIO_S3_KEY`, `ERROR_AUDIO_URL`).
 - Local files under `storage/` are temporary intermediate artifacts, not the final client-facing audio source.
+
+## 4. Request Flow
+
+End-to-end flow for a `POST /analyze-medication` request from the Swift app:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Swift App                            │
+│  User takes photo  ──►  POST /analyze-medication            │
+│                         (multipart image upload)            │
+└─────────────────────────┬───────────────────────────────────┘
+                          │ HTTP
+                          ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   FastAPI  (routes.py)                      │
+│  Validate file extension (.jpg/.jpeg/.png)                  │
+│  Generate request_id  ──►  MedicationPipelineService        │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+          ┌───────────────▼──────────────────┐
+          │        STEP 1 — OCR              │
+          │  Save image to disk              │
+          │  PaddleOCR.extract_text()        │
+          │  → raw text from label           │
+          └───────────────┬──────────────────┘
+                          │
+          ┌───────────────▼──────────────────┐
+          │     STEP 2 — Extraction          │
+          │  Send OCR text to OpenAI         │
+          │  (gpt-4.1-mini + prompt)         │
+          │  → drug_name, strength,          │
+          │    dose, form, confidence        │
+          └────────┬─────────────────────────┘
+                   │
+        ┌──────────┴──────────┐
+        │ SUCCESS             │ FAIL (network error,
+        │                     │ missing key, rate limit)
+        ▼                     ▼
+        │             ┌───────────────────┐
+        │             │ Keyword fallback  │
+        │             │ scan OCR text for │
+        │             │ known drug names  │
+        │             └───────┬───────────┘
+        │                     │
+        │              found? │
+        │          ┌──────────┴──────────┐
+        │          │ YES                 │ NO
+        │          │ drug_name set       │ drug_name=null
+        │          │ confidence=0.9      │ confidence=0.2
+        ▼          ▼                     ▼
+        │          │                     │
+        └────┬─────┘                     │
+             │                           │
+          ┌──▼──────────────────────┐    │
+          │   STEP 3 — KB Lookup    │    │
+          │   score against         │◄───┘
+          │   medications.json      │
+          │   (name 50% +           │
+          │    strength 30% +       │
+          │    form 20%)            │
+          │                         │
+          │   drug_name=null?       │
+          │   → instant matched=F   │
+          │                         │
+          │   score ≥ 0.8?          │
+          └────────┬────────────────┘
+                   │
+        ┌──────────┴──────────┐
+        │ YES (matched)       │ NO (no match /
+        │                     │  drug_name=null)
+        ▼                     ▼
+┌──────────────┐     ┌──────────────────────┐
+│ STEP 4a      │     │ STEP 4b              │
+│ Summary from │     │ Fallback summary     │
+│ KB template  │     │ "Could not identify" │
+└──────┬───────┘     └──────────┬───────────┘
+       │                        │
+       ▼                        ▼
+┌──────────────────────┐   ┌──────────────────────┐
+│ STEP 5a — Audio      │   │ STEP 5b              │
+│                      │   │ Return pre-stored    │
+│ Build stable S3 key  │   │ fallback audio URL   │
+│ {name}_{str}_{form}  │   │ from S3              │
+│        .mp3          │   └──────────┬───────────┘
+│                      │              │
+│  S3 HEAD request     │              │
+│  key exists?         │              │
+│  YES        NO       │              │
+│   │          │       │              │
+│  Skip    TTS synth   │              │
+│  TTS     Compress    │              │
+│          Upload→S3   │              │
+│    │          │      │              │
+│    └────┬─────┘      │              │
+│    Presign URL       │              │
+│  source=             │              │
+│  "cached" /          │              │
+│  "generated"         │              │
+└──────────┬───────────┘              │
+           └────────────┬─────────────┘
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Response to Swift                        │
+│  {                                                          │
+│    request_id, ocr_text,                                    │
+│    extraction: { drug_name, strength, dose, form },         │
+│    kb_match:   { matched, score, canonical_name },          │
+│    summary:    { text, source },                            │
+│    audio:      { url (presigned S3), s3_key, source },      │
+│    status:     "success" | "partial_success"                │
+│  }                                                          │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+┌─────────────────────────▼───────────────────────────────────┐
+│                     Swift App                               │
+│  Play audio directly from presigned S3 URL                  │
+│  Display summary text                                       │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ## Local Setup
 

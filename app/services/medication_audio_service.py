@@ -35,11 +35,20 @@ class MedicationAudioService:
         if not record or record.id is None:
             raise AudioUnavailableError("Matched medication record is missing an ID.")
 
+        s3_key = self._build_s3_key(record.canonical_name, record.strength, record.form)
+
+        if self.storage_service.audio_key_exists(s3_key):
+            return AudioPayload(
+                content_type="audio/mpeg",
+                s3_key=s3_key,
+                url=self.storage_service.presign_url(s3_key),
+                source="cached_medication_audio",
+            )
+
         try:
             raw_audio_path = self.tts_service.synthesize(summary_text, request_id)
             compressed_path = self.compression_service.compress(raw_audio_path, request_id, self.audio_dir)
-            s3_key = f"medications/{request_id}.mp3"
-            audio_url = self.storage_service.upload_audio(compressed_path, s3_key)
+            self.storage_service.upload_audio(compressed_path, s3_key)
             audio_url = self.storage_service.presign_url(s3_key)
         except AppError as exc:
             raise AudioUnavailableError(
@@ -53,6 +62,13 @@ class MedicationAudioService:
             url=audio_url,
             source="generated_medication_audio",
         )
+
+    @staticmethod
+    def _build_s3_key(canonical_name: str, strength: str, form: str) -> str:
+        def sanitize(s: str) -> str:
+            return s.lower().replace(" ", "_").replace("/", "-")
+
+        return f"medications/{sanitize(canonical_name)}_{sanitize(strength)}_{sanitize(form)}.mp3"
 
     def fallback_audio(self) -> AudioPayload:
         return AudioPayload(

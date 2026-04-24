@@ -38,8 +38,8 @@ class DummyKBService:
             record=MedicationRecord(
                 canonical_name="Tylenol",
                 aliases=["Acetaminophen"],
-                dose_forms=["tablet"],
-                common_strengths=["500 mg"],
+                strength="500 mg",
+                form="tablet",
                 purpose="pain relief and fever reduction",
                 warnings=["Do not exceed the recommended dose."],
                 audio_summary_template="{name}, {dose}. Commonly used for {purpose}. Warning: {warning_short}",
