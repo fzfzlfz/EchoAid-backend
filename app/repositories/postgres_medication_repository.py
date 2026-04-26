@@ -13,6 +13,20 @@ class PostgresMedicationRepository:
             rows = session.query(MedicationORM).all()
             return [self._to_domain(row) for row in rows]
 
+    def update_audio_s3_key(self, medication_id: int, s3_key: str) -> None:
+        with self.session_factory() as session:
+            session.query(MedicationORM).filter(MedicationORM.id == medication_id).update(
+                {"audio_s3_key": s3_key}
+            )
+            session.commit()
+
+    def clear_audio_s3_key(self, medication_id: int) -> None:
+        with self.session_factory() as session:
+            session.query(MedicationORM).filter(MedicationORM.id == medication_id).update(
+                {"audio_s3_key": None}
+            )
+            session.commit()
+
     @staticmethod
     def _to_domain(row: MedicationORM) -> MedicationRecord:
         return MedicationRecord(
@@ -24,4 +38,5 @@ class PostgresMedicationRepository:
             purpose=row.purpose,
             warnings=row.warnings or [],
             audio_summary_template=row.audio_summary_template,
+            audio_s3_key=row.audio_s3_key,
         )

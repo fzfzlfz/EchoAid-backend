@@ -1,7 +1,11 @@
 import subprocess
+import time
 from pathlib import Path
 
 from app.core.exceptions import AudioCompressionError
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class AudioCompressionService:
@@ -44,7 +48,11 @@ class AudioCompressionService:
             str(output_path),
         ]
 
+        logger.info("ffmpeg_start input=%s", input_path.name)
+        t0 = time.perf_counter()
         result = subprocess.run(command, capture_output=True, text=True, check=False)
         if result.returncode != 0:
+            logger.error("ffmpeg_failed returncode=%d stderr=%s", result.returncode, result.stderr.strip())
             raise AudioCompressionError(f"FFmpeg failed: {result.stderr.strip()}")
+        logger.info("ffmpeg_success output=%s ffmpeg_ms=%.0f", output_path.name, (time.perf_counter() - t0) * 1000)
         return output_path

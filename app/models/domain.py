@@ -25,6 +25,7 @@ class MedicationRecord(BaseModel):
     purpose: str
     warnings: list[str] = Field(default_factory=list)
     audio_summary_template: str
+    audio_s3_key: str | None = None
 
 
 class KBMatchResult(BaseModel):

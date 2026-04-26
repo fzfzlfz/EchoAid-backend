@@ -1,10 +1,14 @@
 import json
+import time
 from pathlib import Path
 
 from openai import OpenAI
 
 from app.core.exceptions import ExtractionError
+from app.core.logging import get_logger
 from app.models.domain import MedicationExtraction
+
+logger = get_logger(__name__)
 
 
 class ExtractionService:
@@ -27,6 +31,8 @@ class ExtractionService:
         if not self.client:
             raise ExtractionError("OPENAI_API_KEY is missing. Configure it or enable mock services.")
 
+        logger.info("extraction_start model=%s", self.model)
+        t0 = time.perf_counter()
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
@@ -37,7 +43,9 @@ class ExtractionService:
                 response_format={"type": "json_object"},
             )
             payload = json.loads(response.choices[0].message.content)
-            return MedicationExtraction.model_validate(payload)
+            result = MedicationExtraction.model_validate(payload)
+            logger.info("extraction_success drug_name=%s confidence=%.2f openai_ms=%.0f", result.drug_name, result.confidence, (time.perf_counter() - t0) * 1000)
+            return result
         except Exception as exc:
             raise ExtractionError(f"Failed to extract structured medication data: {exc}") from exc
 
@@ -45,6 +53,7 @@ class ExtractionService:
     def _mock_extract(ocr_text: str) -> MedicationExtraction:
         lowered = ocr_text.lower()
         if "tylenol" in lowered or "acetaminophen" in lowered:
+            logger.info("keyword_fallback_match drug_name=Tylenol")
             return MedicationExtraction(
                 drug_name="Tylenol",
                 dose="500 mg" if "500" in lowered else None,
@@ -52,4 +61,5 @@ class ExtractionService:
                 confidence=0.9,
                 notes="Mock match from OCR text.",
             )
+        logger.warning("keyword_fallback_no_match ocr_text_length=%d", len(ocr_text))
         return MedicationExtraction(confidence=0.2, notes="Mock extraction could not identify a medication.")

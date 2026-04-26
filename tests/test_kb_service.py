@@ -34,3 +34,11 @@ def test_kb_no_match() -> None:
     service = MedicationKBService(InMemoryMedicationRepository())
     result = service.lookup(MedicationExtraction(drug_name="Mystery Drug"))
     assert result.matched is False
+
+
+# Branch 5 — KB lookup skipped when drug_name is null
+def test_kb_lookup_skipped_when_no_drug_name() -> None:
+    service = MedicationKBService(InMemoryMedicationRepository())
+    result = service.lookup(MedicationExtraction(drug_name=None))
+    assert result.matched is False
+    assert result.score is None

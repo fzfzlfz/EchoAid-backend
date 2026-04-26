@@ -56,7 +56,7 @@ class DummySummaryService:
 
 
 class DummyMedicationAudioService:
-    def get_audio_for_match(self, match, summary_text: str, request_id: str) -> AudioPayload:
+    async def get_audio_for_match(self, match, summary_text: str, request_id: str) -> AudioPayload:
         return AudioPayload(
             content_type="audio/mpeg",
             s3_key="medications/tylenol.mp3",
@@ -88,6 +88,40 @@ def override_pipeline(tmp_path):
     app.dependency_overrides[get_pipeline_service] = lambda: pipeline
     yield
     app.dependency_overrides.clear()
+
+
+# Branch 11 — invalid file type
+def test_invalid_file_type_rejected() -> None:
+    response = client.post(
+        "/analyze-medication",
+        files={"file": ("doc.pdf", b"fake-bytes", "application/pdf")},
+    )
+    assert response.status_code == 400
+    assert "jpg" in response.json()["detail"].lower()
+
+
+# Branch 12 — AudioUnavailableError returns error audio
+class DummyAudioFailPipelineService:
+    async def analyze(self, file, request_id):
+        from app.core.exceptions import AudioUnavailableError
+        raise AudioUnavailableError("TTS crashed")
+
+
+@pytest.fixture
+def override_pipeline_audio_error():
+    from app.dependencies import get_pipeline_service
+    app.dependency_overrides[get_pipeline_service] = lambda: DummyAudioFailPipelineService()
+    yield
+    app.dependency_overrides.clear()
+
+
+def test_audio_unavailable_returns_error_audio(override_pipeline_audio_error) -> None:
+    response = client.post(
+        "/analyze-medication",
+        files={"file": ("label.png", b"fake-image-bytes", "image/png")},
+    )
+    assert response.status_code == 500
+    assert response.json()["audio"]["source"] == "error_audio"
 
 
 def test_analyze_endpoint_with_mocks(override_pipeline) -> None:

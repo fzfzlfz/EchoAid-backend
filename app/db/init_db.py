@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.config import BASE_DIR
@@ -10,6 +11,15 @@ from app.db.session import engine
 
 def create_schema() -> None:
     Base.metadata.create_all(bind=engine)
+
+
+def migrate_schema() -> None:
+    """Apply incremental schema changes to existing databases."""
+    with engine.connect() as conn:
+        conn.execute(text(
+            "ALTER TABLE medications ADD COLUMN IF NOT EXISTS audio_s3_key VARCHAR(500)"
+        ))
+        conn.commit()
 
 
 def reset_schema() -> None:

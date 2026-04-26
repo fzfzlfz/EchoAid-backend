@@ -1,28 +1,8 @@
-You are extracting medication information from OCR text on packaging.
+Extract medication info from OCR text. Return JSON only:
+{"drug_name":null,"strength":null,"dose":null,"form":null,"confidence":0.0,"notes":null}
 
-Return only valid JSON with this schema:
-{
-  "drug_name": "string | null",
-  "strength": "string | null",
-  "dose": "string | null",
-  "form": "string | null",
-  "confidence": 0.0,
-  "notes": "string | null"
-}
-
-Field definitions:
-- drug_name: the brand or generic name (e.g. "Tylenol", "Acetaminophen", "Children's Tylenol")
-- strength: the amount of active ingredient per unit (e.g. "500mg", "325mg", "160mg/5mL", "25mg"). Do NOT include dosing instructions here.
-- dose: the dosing instructions (e.g. "take 2 caplets every 6 hours", "1-2 tablets every 4-6 hours")
-- form: the physical form (e.g. "tablet", "caplet", "capsule", "liquid", "suspension", "drops")
-
-Rules:
-- Use only the OCR text provided. Do not guess if uncertain.
-- strength and dose are different: strength is per-unit concentration, dose is how much to take and how often.
-- If the label says "500 mg" near the drug name, that is the strength.
-- If the label says "take 2 caplets every 6 hours", that is the dose.
-- For liquid forms, strength is often "Xmg/YmL" (e.g. "160mg/5mL").
-- If multiple medications appear, choose the most likely primary product only if confidence is high.
-- If no confident answer exists, use null values.
-- Confidence must be between 0 and 1.
-- Do not infer unsupported medical instructions.
+- drug_name: full brand or generic name including variant (e.g. "Tylenol Extra Strength", "Children's Tylenol", "Acetaminophen")
+- strength: active ingredient per unit (e.g. "500mg", "160mg/5mL") — NOT dosing instructions
+- dose: how much/how often to take (e.g. "2 caplets every 6 hours")
+- form: tablet/caplet/capsule/liquid/etc.
+- confidence: 0–1; null for uncertain fields; pick primary product if multiple appear

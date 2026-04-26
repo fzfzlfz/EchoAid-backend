@@ -30,6 +30,10 @@ class ExtractOnlyRequest(BaseModel):
     ocr_text: str = Field(min_length=1)
 
 
+class AnalyzeFromTextRequest(BaseModel):
+    ocr_text: str = Field(min_length=1)
+
+
 class OCRDebugResponse(BaseModel):
     request_id: str
     ocr: OCRResult

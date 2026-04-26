@@ -2,12 +2,13 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
 from app.core.config import get_settings
+from app.core.logging import get_logger
 from app.dependencies import get_extraction_service, get_pipeline_service
 from app.core.exceptions import AudioUnavailableError, OCRProcessingError
-from app.models.schemas import AnalyzeMedicationResponse, ExtractOnlyRequest, OCRDebugResponse
+from app.models.schemas import AnalyzeFromTextRequest, AnalyzeMedicationResponse, ExtractOnlyRequest, OCRDebugResponse
 from app.utils.ids import generate_request_id
 
-
+logger = get_logger(__name__)
 router = APIRouter()
 
 
@@ -37,12 +38,37 @@ async def extract_only(
     return extraction_service.extract(payload.ocr_text).model_dump()
 
 
+@router.post("/analyze-medication-text", response_model=AnalyzeMedicationResponse)
+async def analyze_medication_text(
+    payload: AnalyzeFromTextRequest,
+    pipeline=Depends(get_pipeline_service),
+) -> AnalyzeMedicationResponse | JSONResponse:
+    try:
+        return await pipeline.analyze_from_text(payload.ocr_text, generate_request_id())
+    except AudioUnavailableError as exc:
+        logger.error("audio_unavailable error=%s", exc)
+        settings = get_settings()
+        return JSONResponse(
+            status_code=500,
+            content={
+                "detail": str(exc),
+                "audio": {
+                    "content_type": "audio/mpeg",
+                    "s3_key": settings.error_audio_s3_key,
+                    "url": settings.error_audio_url,
+                    "source": "error_audio",
+                },
+            },
+        )
+
+
 @router.post("/analyze-medication", response_model=AnalyzeMedicationResponse)
 async def analyze_medication(
     file: UploadFile = File(...),
     pipeline=Depends(get_pipeline_service),
 ) -> AnalyzeMedicationResponse | JSONResponse:
     if not file.filename or not file.filename.lower().endswith((".jpg", ".jpeg", ".png")):
+        logger.warning("invalid_file_type filename=%s", file.filename)
         raise HTTPException(status_code=400, detail="Only jpg, jpeg, and png files are supported.")
 
     try:
@@ -50,6 +76,7 @@ async def analyze_medication(
     except OCRProcessingError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except AudioUnavailableError as exc:
+        logger.error("audio_unavailable error=%s", exc)
         settings = get_settings()
         return JSONResponse(
             status_code=500,

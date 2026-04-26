@@ -1,9 +1,13 @@
+import time
 from pathlib import Path
 
 import boto3
 from botocore.config import Config
 
 from app.core.exceptions import StorageUploadError
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class S3StorageService:
@@ -35,6 +39,7 @@ class S3StorageService:
         if not self.bucket_name:
             raise StorageUploadError("S3_BUCKET_NAME is missing.")
 
+        t0 = time.perf_counter()
         try:
             self.client.upload_file(
                 str(file_path),
@@ -42,8 +47,10 @@ class S3StorageService:
                 s3_key,
                 ExtraArgs={"ContentType": "audio/mpeg"},
             )
+            logger.info("s3_upload_success key=%s s3_upload_ms=%.0f", s3_key, (time.perf_counter() - t0) * 1000)
             return f"https://{self.bucket_name}.s3.{self.region}.amazonaws.com/{s3_key}"
         except Exception as exc:
+            logger.error("s3_upload_failed key=%s error=%s", s3_key, exc)
             raise StorageUploadError("Failed to upload audio to S3.") from exc
 
     def audio_key_exists(self, s3_key: str) -> bool:
@@ -51,10 +58,13 @@ class S3StorageService:
             return False
         if not self.bucket_name:
             return False
+        t0 = time.perf_counter()
         try:
             self.client.head_object(Bucket=self.bucket_name, Key=s3_key)
+            logger.info("s3_cache_hit key=%s s3_head_ms=%.0f", s3_key, (time.perf_counter() - t0) * 1000)
             return True
         except self.client.exceptions.ClientError:
+            logger.info("s3_cache_miss key=%s s3_head_ms=%.0f", s3_key, (time.perf_counter() - t0) * 1000)
             return False
 
     def presign_url(self, s3_key: str, expiry: int = 604800) -> str:

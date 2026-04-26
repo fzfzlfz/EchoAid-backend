@@ -19,3 +19,4 @@ class MedicationORM(Base):
     purpose: Mapped[str] = mapped_column(Text, nullable=False)
     warnings: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
     audio_summary_template: Mapped[str] = mapped_column(Text, nullable=False)
+    audio_s3_key: Mapped[str | None] = mapped_column(String(500), nullable=True, default=None)

@@ -356,3 +356,10 @@ GOOGLE_APPLICATION_CREDENTIALS=
 ```
 
 Current tests cover health checks, mocked analyze flow, KB matching, summary generation, extraction mock behavior, and shared fallback audio behavior.
+
+
+## Known Limitations / TODOs
+
+- **Presigned URL expiry**: Audio URLs returned by the API are valid for 7 days (S3 SigV4 max). If the mobile client caches a URL and replays it after expiry, it will get a 403. Mitigation: clients should always call the API to get a fresh URL rather than caching it long-term. A future improvement could be to add a dedicated `/refresh-audio-url` endpoint so clients can renew a URL without re-scanning.
+
+- **Stale S3 key in DB**: If an audio file is deleted from S3 outside of application code (manual deletion, bucket lifecycle policy, etc.), the `audio_s3_key` stored in PostgreSQL becomes stale. The background S3 HEAD verification (`_verify_s3_key_background`) will detect this and clear the DB entry on the next request, triggering audio regeneration. However, the request that triggers the detection still returns a presigned URL pointing to a missing file — the client will get a 404 on playback. A future improvement is a `?force_regenerate=true` query param so the client can signal this and get a fresh audio URL in one call.

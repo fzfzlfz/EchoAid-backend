@@ -1,7 +1,10 @@
+from app.core.logging import get_logger
 from app.models.domain import KBMatchResult, MedicationExtraction
 from app.repositories.base import MedicationRepository
 from app.utils.medication_normalization import score_form, score_strength
 from app.utils.text_normalization import normalize_text
+
+logger = get_logger(__name__)
 
 _NAME_WEIGHT = 0.5
 _STRENGTH_WEIGHT = 0.3
@@ -16,6 +19,7 @@ class MedicationKBService:
 
     def lookup(self, extraction: MedicationExtraction) -> KBMatchResult:
         if not extraction.drug_name:
+            logger.warning("kb_lookup_skipped reason=drug_name_missing")
             return KBMatchResult(matched=False)
 
         target_name = normalize_text(extraction.drug_name)
@@ -49,6 +53,10 @@ class MedicationKBService:
 
             if combined > (best_result.score or 0):
                 matched = combined >= self.match_threshold
+                logger.info(
+                    "kb_candidate candidate=%s score=%.4f name=%.2f strength=%.2f form=%.2f matched=%s",
+                    record.canonical_name, combined, best_name_score, s_strength, s_form, matched,
+                )
                 best_result = KBMatchResult(
                     matched=matched,
                     canonical_name=record.canonical_name if matched else None,
@@ -57,6 +65,8 @@ class MedicationKBService:
                     record=record if matched else None,
                 )
 
+        if not best_result.matched:
+            logger.warning("kb_no_match drug_name=%s best_score=%s", extraction.drug_name, best_result.score)
         return best_result if best_result.matched else KBMatchResult(matched=False, score=best_result.score)
 
     @staticmethod

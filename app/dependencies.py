@@ -96,6 +96,7 @@ def get_medication_audio_service() -> MedicationAudioService:
         storage_service=get_storage_service(),
         audio_dir=settings.audio_dir,
         settings=settings,
+        repository=get_medication_repository(),
     )
 
 

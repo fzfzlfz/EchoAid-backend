@@ -1,0 +1,181 @@
+INFO:     Will watch for changes in these directories: ['/Users/fzfzlfz/Desktop/code/EchoAid-backend']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [70052] using WatchFiles
+INFO:     Started server process [70055]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+[33mConnectivity check to the model hoster has been skipped because `PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK` is enabled.[0m
+2026-04-24 13:35:28,924 INFO [numexpr.utils] NumExpr defaulting to 8 threads.
+/opt/homebrew/anaconda3/lib/python3.11/site-packages/paddle/utils/cpp_extension/extension_utils.py:712: UserWarning: No ccache found. Please be aware that recompiling all source files may be required. You can download and install ccache from: https://github.com/ccache/ccache/blob/master/doc/INSTALL.md
+  warnings.warn(warning_message)
+[32mCreating model: ('PP-LCNet_x1_0_textline_ori', None)[0m
+[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `/Users/fzfzlfz/.paddlex/official_models/PP-LCNet_x1_0_textline_ori`.[0m
+[32mCreating model: ('PP-OCRv5_server_det', None)[0m
+[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `/Users/fzfzlfz/.paddlex/official_models/PP-OCRv5_server_det`.[0m
+[32mCreating model: ('en_PP-OCRv5_mobile_rec', None)[0m
+[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `/Users/fzfzlfz/.paddlex/official_models/en_PP-OCRv5_mobile_rec`.[0m
+2026-04-24 13:35:34,953 INFO [app.services.pipeline] request_start request_id=77d3feca-d2a1-442a-b821-2cf8b61e1a66 source=client_ocr
+2026-04-24 13:35:34,954 INFO [app.services.extraction_service] extraction_start model=gpt-5.4-nano
+2026-04-24 13:35:36,713 INFO [httpx] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-24 13:35:36,723 INFO [app.services.extraction_service] extraction_success drug_name=Tylenol Extra Strength confidence=0.74 openai_ms=1769
+2026-04-24 13:35:36,723 INFO [app.services.pipeline] step_extraction_ms=1769 request_id=77d3feca-d2a1-442a-b821-2cf8b61e1a66
+2026-04-24 13:35:36,746 INFO [app.services.kb_service] kb_candidate candidate=Tylenol Extra Strength score=0.8000 name=1.00 strength=1.00 form=0.00 matched=True
+2026-04-24 13:35:36,746 INFO [app.services.pipeline] step_kb_ms=23 request_id=77d3feca-d2a1-442a-b821-2cf8b61e1a66 matched=True score=0.8
+2026-04-24 13:35:37,067 INFO [app.services.storage_service] s3_cache_hit key=medications/tylenol_extra_strength_500mg_caplet.mp3 s3_head_ms=320
+2026-04-24 13:35:37,067 INFO [app.services.medication_audio_service] audio_cache_hit key=medications/tylenol_extra_strength_500mg_caplet.mp3
+2026-04-24 13:35:37,089 INFO [app.services.pipeline] step_audio_ms=342 request_id=77d3feca-d2a1-442a-b821-2cf8b61e1a66 source=medication_match
+2026-04-24 13:35:37,089 INFO [app.services.pipeline] request_end request_id=77d3feca-d2a1-442a-b821-2cf8b61e1a66 total_ms=2135 summary_source=structured_kb
+ > tts_models/en/ljspeech/tacotron2-DDC is already downloaded.
+ > vocoder_models/en/ljspeech/hifigan_v2 is already downloaded.
+ > Using model: Tacotron2
+ > Setting up Audio Processor...
+ | > sample_rate:22050
+ | > resample:False
+ | > num_mels:80
+ | > log_func:np.log
+ | > min_level_db:-100
+ | > frame_shift_ms:None
+ | > frame_length_ms:None
+ | > ref_level_db:20
+ | > fft_size:1024
+ | > power:1.5
+ | > preemphasis:0.0
+ | > griffin_lim_iters:60
+ | > signal_norm:False
+ | > symmetric_norm:True
+ | > mel_fmin:0
+ | > mel_fmax:8000.0
+ | > pitch_fmin:1.0
+ | > pitch_fmax:640.0
+ | > spec_gain:1.0
+ | > stft_pad_mode:reflect
+ | > max_norm:4.0
+ | > clip_norm:True
+ | > do_trim_silence:True
+ | > trim_db:60
+ | > do_sound_norm:False
+ | > do_amp_to_db_linear:True
+ | > do_amp_to_db_mel:True
+ | > do_rms_norm:False
+ | > db_level:None
+ | > stats_path:None
+ | > base:2.718281828459045
+ | > hop_length:256
+ | > win_length:1024
+ > Model's reduction rate `r` is set to: 1
+ > Vocoder Model: hifigan
+ > Setting up Audio Processor...
+ | > sample_rate:22050
+ | > resample:False
+ | > num_mels:80
+ | > log_func:np.log
+ | > min_level_db:-100
+ | > frame_shift_ms:None
+ | > frame_length_ms:None
+ | > ref_level_db:20
+ | > fft_size:1024
+ | > power:1.5
+ | > preemphasis:0.0
+ | > griffin_lim_iters:60
+ | > signal_norm:False
+ | > symmetric_norm:True
+ | > mel_fmin:0
+ | > mel_fmax:8000.0
+ | > pitch_fmin:1.0
+ | > pitch_fmax:640.0
+ | > spec_gain:1.0
+ | > stft_pad_mode:reflect
+ | > max_norm:4.0
+ | > clip_norm:True
+ | > do_trim_silence:False
+ | > trim_db:60
+ | > do_sound_norm:False
+ | > do_amp_to_db_linear:True
+ | > do_amp_to_db_mel:True
+ | > do_rms_norm:False
+ | > db_level:None
+ | > stats_path:None
+ | > base:2.718281828459045
+ | > hop_length:256
+ | > win_length:1024
+ > Generator Model: hifigan_generator
+ > Discriminator Model: hifigan_discriminator
+Removing weight norm...
+INFO:     127.0.0.1:60797 - "POST /analyze-medication-text HTTP/1.1" 200 OK
+2026-04-24 13:35:42,531 INFO [app.services.pipeline] request_start request_id=6b2875d1-7199-48ac-beec-89f8f8ba2bdb source=client_ocr
+2026-04-24 13:35:42,532 INFO [app.services.extraction_service] extraction_start model=gpt-5.4-nano
+2026-04-24 13:35:43,803 INFO [httpx] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-24 13:35:43,806 INFO [app.services.extraction_service] extraction_success drug_name=Tylenol Extra Strength confidence=0.84 openai_ms=1273
+2026-04-24 13:35:43,806 INFO [app.services.pipeline] step_extraction_ms=1274 request_id=6b2875d1-7199-48ac-beec-89f8f8ba2bdb
+2026-04-24 13:35:43,820 INFO [app.services.kb_service] kb_candidate candidate=Tylenol Extra Strength score=0.8000 name=1.00 strength=1.00 form=0.00 matched=True
+2026-04-24 13:35:43,820 INFO [app.services.pipeline] step_kb_ms=14 request_id=6b2875d1-7199-48ac-beec-89f8f8ba2bdb matched=True score=0.8
+2026-04-24 13:35:43,820 INFO [app.services.medication_audio_service] audio_db_cache_hit key=medications/tylenol_extra_strength_500mg_caplet.mp3
+2026-04-24 13:35:43,822 INFO [app.services.pipeline] step_audio_ms=2 request_id=6b2875d1-7199-48ac-beec-89f8f8ba2bdb source=medication_match
+2026-04-24 13:35:43,822 INFO [app.services.pipeline] request_end request_id=6b2875d1-7199-48ac-beec-89f8f8ba2bdb total_ms=1291 summary_source=structured_kb
+INFO:     127.0.0.1:60803 - "POST /analyze-medication-text HTTP/1.1" 200 OK
+2026-04-24 13:35:43,843 INFO [app.services.pipeline] request_start request_id=1a3cf06c-961d-432c-a375-f5bf07e9810a source=client_ocr
+2026-04-24 13:35:43,843 INFO [app.services.extraction_service] extraction_start model=gpt-5.4-nano
+2026-04-24 13:35:45,035 INFO [httpx] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-24 13:35:45,037 INFO [app.services.extraction_service] extraction_success drug_name=Tylenol Extra Strength confidence=0.78 openai_ms=1194
+2026-04-24 13:35:45,037 INFO [app.services.pipeline] step_extraction_ms=1194 request_id=1a3cf06c-961d-432c-a375-f5bf07e9810a
+2026-04-24 13:35:45,040 INFO [app.services.kb_service] kb_candidate candidate=Tylenol Extra Strength score=0.8000 name=1.00 strength=1.00 form=0.00 matched=True
+2026-04-24 13:35:45,040 INFO [app.services.pipeline] step_kb_ms=3 request_id=1a3cf06c-961d-432c-a375-f5bf07e9810a matched=True score=0.8
+2026-04-24 13:35:45,040 INFO [app.services.medication_audio_service] audio_db_cache_hit key=medications/tylenol_extra_strength_500mg_caplet.mp3
+2026-04-24 13:35:45,041 INFO [app.services.pipeline] step_audio_ms=1 request_id=1a3cf06c-961d-432c-a375-f5bf07e9810a source=medication_match
+2026-04-24 13:35:45,041 INFO [app.services.pipeline] request_end request_id=1a3cf06c-961d-432c-a375-f5bf07e9810a total_ms=1198 summary_source=structured_kb
+INFO:     127.0.0.1:60806 - "POST /analyze-medication-text HTTP/1.1" 200 OK
+2026-04-24 13:35:45,063 INFO [app.services.pipeline] request_start request_id=fb756aa8-1e10-4392-a7b6-11696f5240cf source=client_ocr
+2026-04-24 13:35:45,064 INFO [app.services.extraction_service] extraction_start model=gpt-5.4-nano
+2026-04-24 13:35:46,354 INFO [httpx] HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-24 13:35:46,357 INFO [app.services.extraction_service] extraction_success drug_name=Tylenol Extra Strength confidence=0.92 openai_ms=1293
+2026-04-24 13:35:46,357 INFO [app.services.pipeline] step_extraction_ms=1293 request_id=fb756aa8-1e10-4392-a7b6-11696f5240cf
+2026-04-24 13:35:46,359 INFO [app.services.kb_service] kb_candidate candidate=Tylenol Extra Strength score=0.8000 name=1.00 strength=1.00 form=0.00 matched=True
+2026-04-24 13:35:46,359 INFO [app.services.pipeline] step_kb_ms=3 request_id=fb756aa8-1e10-4392-a7b6-11696f5240cf matched=True score=0.8
+2026-04-24 13:35:46,360 INFO [app.services.medication_audio_service] audio_db_cache_hit key=medications/tylenol_extra_strength_500mg_caplet.mp3
+2026-04-24 13:35:46,360 INFO [app.services.pipeline] step_audio_ms=1 request_id=fb756aa8-1e10-4392-a7b6-11696f5240cf source=medication_match
+2026-04-24 13:35:46,360 INFO [app.services.pipeline] request_end request_id=fb756aa8-1e10-4392-a7b6-11696f5240cf total_ms=1297 summary_source=structured_kb
+INFO:     127.0.0.1:60808 - "POST /analyze-medication-text HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'app/services/medication_audio_service.py'. Reloading...
+INFO:     Started server process [73201]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/medication_audio_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [73201]
+INFO:     Started server process [73990]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/pipeline.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [73990]
+INFO:     Started server process [74012]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'tests/test_medication_audio_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [74012]
+INFO:     Started server process [74433]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'tests/test_medication_audio_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [74433]
+INFO:     Started server process [74487]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'tests/test_api.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [74487]
+INFO:     Started server process [74499]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

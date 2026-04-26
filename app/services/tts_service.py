@@ -1,6 +1,10 @@
+import time
 from pathlib import Path
 
 from app.core.exceptions import TextToSpeechError
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class TextToSpeechService:
@@ -24,8 +28,11 @@ class TextToSpeechService:
             output_path.write_bytes(b"mock-audio")
             return output_path
 
+        logger.info("tts_start request_id=%s text_length=%d", request_id, len(text))
+        t0 = time.perf_counter()
         try:
             self._tts.tts_to_file(text=text, file_path=str(output_path))
+            logger.info("tts_success request_id=%s output=%s tts_ms=%.0f", request_id, output_path.name, (time.perf_counter() - t0) * 1000)
             return output_path
         except Exception as exc:
             raise TextToSpeechError(f"Failed to generate audio: {exc}") from exc

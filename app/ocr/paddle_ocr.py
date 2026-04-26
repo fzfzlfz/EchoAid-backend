@@ -1,7 +1,10 @@
 from pathlib import Path
 
 from app.core.exceptions import OCRProcessingError
+from app.core.logging import get_logger
 from app.models.domain import OCRResult
+
+logger = get_logger(__name__)
 
 
 class PaddleOCREngine:
@@ -28,6 +31,7 @@ class PaddleOCREngine:
         if self.enable_mock:
             stem = Path(image_path).stem.replace("_", " ")
             text = stem if stem else "unreadable label"
+            logger.info("ocr_success lines=1 confidence=0.50 mode=mock")
             return OCRResult(full_text=text, lines=[text], confidence=0.5)
 
         result = self._engine.predict(image_path) if self._engine else None
@@ -50,4 +54,5 @@ class PaddleOCREngine:
             raise OCRProcessingError("OCR provider returned empty text.")
 
         average_confidence = sum(confidences) / len(confidences) if confidences else None
+        logger.info("ocr_success lines=%d confidence=%.2f", len(lines), average_confidence or 0)
         return OCRResult(full_text="\n".join(lines), lines=lines, confidence=average_confidence)
